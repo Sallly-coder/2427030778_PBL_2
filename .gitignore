@@ -1,0 +1,22 @@
+# Audio data (large files)
+data/
+data/ravdess_subset/
+data/*.wav
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Jupyter
+*.ipynb_checkpoints
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
