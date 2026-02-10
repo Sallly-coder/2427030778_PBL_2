@@ -1,6 +1,6 @@
-# 🎙️ Speech Emotion Recognition (SER) — PBL Project (Sem 2)
+# 🎙️ Speech Emotion Recognition (SER) — PBL Project (Sem 4)
 
-> **Project-Based Learning | 6-Semester Project | Semester 2 Mid-Term**
+> **Project-Based Learning | Semester 4 Mid-Term**
 
 ---
 
@@ -40,7 +40,7 @@ speech-emotion-recognition-pbl2/
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/YOUR_ID/speech-emotion-recognition-pbl2.git
+git clone https://github.com/Sallly-coder/speech-emotion-recognition-pbl2.git
 cd speech-emotion-recognition-pbl2
 ```
 
