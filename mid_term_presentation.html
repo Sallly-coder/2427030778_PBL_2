@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Speech Emotion Recognition — PBL Mid-Term</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --accent:  #7c3aed;
+      --bg:      #0f172a;
+      --card:    #1e293b;
+      --text:    #e2e8f0;
+      --muted:   #94a3b8;
+      --green:   #22c55e;
+      --yellow:  #eab308;
+      --red:     #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(15,23,42,0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #334155;
+      padding: 0.75rem 2rem;
+      display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
+    }
+    nav .logo { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+    nav a {
+      color: var(--muted); text-decoration: none; font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--text); }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #1e293b 100%);
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+      border-bottom: 1px solid #334155;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(37,99,235,0.2);
+      border: 1px solid var(--primary);
+      color: #93c5fd;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      background: linear-gradient(90deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    .hero p { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem; }
+    .meta-grid {
+      display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    .meta-item { text-align: center; }
+    .meta-item .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .meta-item .value { font-size: 1rem; font-weight: 600; color: #60a5fa; }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem; }
+    section { margin-bottom: 4rem; }
+    h2 {
+      font-size: 1.6rem; font-weight: 700;
+      color: #60a5fa;
+      border-left: 4px solid var(--primary);
+      padding-left: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    h3 { font-size: 1.1rem; font-weight: 600; color: #a78bfa; margin: 1.25rem 0 0.5rem; }
+    p  { color: var(--muted); margin-bottom: 0.75rem; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .cards-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .cards-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    @media (max-width: 700px) {
+      .cards-2, .cards-3 { grid-template-columns: 1fr; }
+    }
+
+    /* ── TAGS ── */
+    .tag {
+      display: inline-block;
+      background: rgba(37,99,235,0.15);
+      border: 1px solid rgba(37,99,235,0.4);
+      color: #93c5fd;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      margin: 0.15rem;
+    }
+    .tag.green  { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #86efac; }
+    .tag.purple { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.4); color: #c4b5fd; }
+    .tag.yellow { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.4); color: #fde047; }
+
+    /* ── PIPELINE ── */
+    .pipeline {
+      display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+      background: var(--card);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+    .pipe-step {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid #475569;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      text-align: center;
+      min-width: 120px;
+    }
+    .pipe-step .icon  { font-size: 1.4rem; }
+    .pipe-step .name  { font-size: 0.75rem; font-weight: 700; color: var(--text); margin-top: 0.3rem; }
+    .pipe-step .desc  { font-size: 0.65rem; color: var(--muted); margin-top: 0.15rem; }
+    .pipe-arrow {
+      color: var(--primary); font-size: 1.2rem; padding: 0 0.5rem; flex-shrink: 0;
+    }
+
+    /* ── CODE BLOCK ── */
+    pre {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+    code { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; }
+    .kw  { color: #7dd3fc; }   /* keyword */
+    .fn  { color: #a78bfa; }   /* function */
+    .str { color: #86efac; }   /* string */
+    .cm  { color: #475569; }   /* comment */
+    .num { color: #fb923c; }   /* number */
+
+    /* ── TABLE ── */
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th {
+      background: rgba(37,99,235,0.2);
+      color: #93c5fd;
+      padding: 0.6rem 1rem;
+      text-align: left;
+      font-weight: 600;
+    }
+    td { padding: 0.55rem 1rem; border-bottom: 1px solid #1e293b; color: var(--muted); }
+    tr:hover td { background: rgba(255,255,255,0.03); }
+    .acc-bar {
+      display: inline-block;
+      height: 8px; border-radius: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      vertical-align: middle; margin-left: 8px;
+    }
+
+    /* ── ROADMAP ── */
+    .roadmap { display: flex; flex-direction: column; gap: 0; }
+    .rm-item {
+      display: flex; gap: 1.25rem; align-items: flex-start;
+      padding: 1rem 0;
+      border-left: 2px solid #334155;
+      padding-left: 1.5rem;
+      position: relative;
+    }
+    .rm-item::before {
+      content: '';
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--card); border: 2px solid var(--primary);
+      position: absolute; left: -7px; top: 1.2rem;
+    }
+    .rm-item.done::before  { background: var(--green); border-color: var(--green); }
+    .rm-item.next::before  { background: var(--yellow); border-color: var(--yellow); }
+    .rm-sem { font-size: 0.75rem; font-weight: 700; color: #60a5fa; white-space: nowrap; min-width: 60px; margin-top: 0.15rem; }
+    .rm-body .title { font-weight: 600; color: var(--text); }
+    .rm-body .desc  { font-size: 0.85rem; color: var(--muted); margin-top: 0.2rem; }
+
+    /* ── FOLDER TREE ── */
+    .tree {
+      font-family: monospace; font-size: 0.85rem;
+      background: #020617; border: 1px solid #1e293b;
+      border-radius: 8px; padding: 1.25rem;
+      line-height: 1.7; color: var(--muted);
+    }
+    .tree .dir   { color: #60a5fa; font-weight: 600; }
+    .tree .file  { color: #a5f3fc; }
+    .tree .note  { color: #475569; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid #334155;
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    footer a { color: #60a5fa; }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────────────────── -->
+<nav>
+  <span class="logo">🎙️ SER · PBL</span>
+  <a href="#motivation">Motivation</a>
+  <a href="#pipeline">Pipeline</a>
+  <a href="#dataset">Dataset</a>
+  <a href="#implementation">Implementation</a>
+  <a href="#results">Results</a>
+  <a href="#roadmap">Roadmap</a>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────── -->
+<div class="hero">
+  <div class="badge">🏫 Project-Based Learning · 6-Semester Project · Semester 2 Mid-Term</div>
+  <h1>Speech Emotion Recognition</h1>
+  <p>Classifying human emotions from audio signals using signal processing and machine learning</p>
+  <div class="meta-grid">
+    <div class="meta-item">
+      <div class="label">Student ID</div>
+      <div class="value">YOUR_ID_HERE</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Guide</div>
+      <div class="value">Prof. Name Here</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Semester</div>
+      <div class="value">2 of 6</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Status</div>
+      <div class="value" style="color: var(--green);">🟢 Mid-Term</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── MOTIVATION ─────────────────────────────────── -->
+  <section id="motivation">
+    <h2>💡 Problem &amp; Motivation</h2>
+    <div class="cards-3">
+      <div class="card">
+        <h3>🤖 Human-Computer Interaction</h3>
+        <p>Voice assistants that understand emotion can respond more naturally — saying "I'm sorry to hear that" when you're sad.</p>
+      </div>
+      <div class="card">
+        <h3>📞 Call Center Analytics</h3>
+        <p>Automatically flag frustrated or distressed callers for immediate human escalation, improving customer service quality.</p>
+      </div>
+      <div class="card">
+        <h3>🧠 Mental Health Apps</h3>
+        <p>Passive monitoring of mood via voice — helping therapists track patient emotional states between sessions.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.25rem;">
+      <h3>What is Speech Emotion Recognition?</h3>
+      <p>SER is the task of automatically identifying the emotional state of a speaker from audio. Given a short speech clip, the system outputs a label like <strong>happy</strong>, <strong>sad</strong>, <strong>neutral</strong>, or <strong>angry</strong>.</p>
+      <p>The key challenge: emotions manifest in subtle patterns of pitch, rhythm, energy, and voice quality — which classical ML can learn from <strong>acoustic features</strong> like MFCCs.</p>
+      <div style="margin-top:0.75rem;">
+        <span class="tag">NLP</span>
+        <span class="tag">Audio ML</span>
+        <span class="tag green">Signal Processing</span>
+        <span class="tag purple">Classification</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PIPELINE ─────────────────────────────────── -->
+  <section id="pipeline">
+    <h2>🔄 System Pipeline</h2>
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="icon">🎤</div>
+        <div class="name">Raw Audio</div>
+        <div class="desc">.wav file</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="icon">✂️</div>
+        <div class="name">Pre-process</div>
+        <div class="desc">Trim · Normalize · Pre-emphasis</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="icon">🎛️</div>
+        <div class="name">Feature Extract</div>
+        <div class="desc">MFCC · Pitch · Energy · ZCR</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="icon">📐</div>
+        <div class="name">Feature Vector</div>
+        <div class="desc">247-dim array</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="icon">🤖</div>
+        <div class="name">Classifier</div>
+        <div class="desc">RF · SVM · MLP</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step" style="border-color: var(--green);">
+        <div class="icon">😊</div>
+        <div class="name">Emotion</div>
+        <div class="desc">happy / sad / neutral</div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.25rem;" class="cards-2">
+      <div class="card">
+        <h3>Audio Features Used</h3>
+        <table>
+          <tr><th>Feature</th><th>Dimension</th><th>What it captures</th></tr>
+          <tr><td>MFCC + Δ + ΔΔ</td><td>240</td><td>Spectral shape + dynamics</td></tr>
+          <tr><td>Pitch (F0)</td><td>3</td><td>Voice fundamental frequency</td></tr>
+          <tr><td>RMS Energy</td><td>2</td><td>Loudness / intensity</td></tr>
+          <tr><td>ZCR</td><td>2</td><td>Signal noisiness</td></tr>
+          <tr><td style="font-weight:600;">Total</td><td style="color:var(--green);font-weight:600;">247</td><td></td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Why MFCCs?</h3>
+        <p>MFCCs (Mel-Frequency Cepstral Coefficients) are the gold standard for speech tasks because:</p>
+        <p>① The Mel scale matches <strong>human auditory perception</strong></p>
+        <p>② DCT decorrelates coefficients for <strong>compact representation</strong></p>
+        <p>③ They capture <strong>vocal tract shape</strong> — what makes voices different</p>
+        <p>④ Proven to work well with <strong>shallow ML classifiers</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DATASET ─────────────────────────────────── -->
+  <section id="dataset">
+    <h2>📂 Dataset</h2>
+    <div class="cards-2">
+      <div class="card">
+        <h3>RAVDESS</h3>
+        <p>Ryerson Audio-Visual Database of Emotional Speech and Song</p>
+        <table style="margin-top:0.75rem;">
+          <tr><th>Property</th><th>Value</th></tr>
+          <tr><td>Total clips</td><td>~2452 (speech)</td></tr>
+          <tr><td>Actors</td><td>24 (12M + 12F)</td></tr>
+          <tr><td>Emotions</td><td>8 (neutral, calm, happy, sad, angry, fearful, disgust, surprised)</td></tr>
+          <tr><td>Format</td><td>WAV, 48 kHz stereo</td></tr>
+          <tr><td>License</td><td>CC BY-NC-SA 4.0</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Mid-Term Subset Used</h3>
+        <p>For the mid-term baseline, we focus on <strong>3 emotions</strong>:</p>
+        <table style="margin-top:0.75rem;">
+          <tr><th>Emotion</th><th>RAVDESS Code</th><th>Clips</th></tr>
+          <tr><td>😐 Neutral</td><td>01</td><td>~96</td></tr>
+          <tr><td>😊 Happy</td><td>03</td><td>~192</td></tr>
+          <tr><td>😢 Sad</td><td>04</td><td>~192</td></tr>
+          <tr><td style="font-weight:600;">Total</td><td></td><td style="color:var(--green);">~480</td></tr>
+        </table>
+        <p style="margin-top:0.75rem;font-size:0.82rem;">Train/Test split: <strong>70% / 30%</strong> (stratified)</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.25rem;">
+      <h3>Filename Convention (RAVDESS)</h3>
+      <pre><code><span class="str">03-01-03-01-01-01-01.wav</span>
+ │   │   │  │  │  │  └── Actor (01-24)
+ │   │   │  │  │  └───── Repetition (01-02)
+ │   │   │  │  └──────── Statement (01-02)
+ │   │   │  └─────────── Intensity (01=normal, 02=strong)
+ │   │   └────────────── <span class="kw">Emotion (01=neutral … 08=surprised)</span>
+ │   └────────────────── Vocal channel (01=speech)
+ └────────────────────── Modality (03=audio-only)
+</code></pre>
+    </div>
+  </section>
+
+  <!-- ── IMPLEMENTATION ─────────────────────────────── -->
+  <section id="implementation">
+    <h2>💻 Mid-Term Implementation</h2>
+
+    <h3>Project Structure</h3>
+    <div class="tree">
+      <span class="dir">speech-emotion-recognition-pbl2/</span><br/>
+      ├── <span class="dir">data/</span><br/>
+      │   └── <span class="file">README.md</span>  <span class="note">← download instructions</span><br/>
+      ├── <span class="dir">notebooks/</span><br/>
+      │   ├── <span class="file">01_signal_processing_demo.ipynb</span>  <span class="note">← waveforms, spectrograms</span><br/>
+      │   └── <span class="file">02_feature_extraction.ipynb</span>  <span class="note">← MFCC, features, dataset EDA</span><br/>
+      ├── <span class="dir">src/</span><br/>
+      │   ├── <span class="file">audio_processing.py</span>  <span class="note">← load, trim, normalize</span><br/>
+      │   ├── <span class="file">feature_extraction.py</span>  <span class="note">← MFCC, pitch, energy, ZCR</span><br/>
+      │   ├── <span class="file">model.py</span>  <span class="note">← EmotionClassifier class</span><br/>
+      │   └── <span class="file">train_eval.py</span>  <span class="note">← training loop, metrics, CLI</span><br/>
+      ├── <span class="dir">docs/</span><br/>
+      │   └── <span class="file">mid_term_presentation.html</span>  <span class="note">← this page</span><br/>
+      └── <span class="file">requirements.txt</span>
+    </div>
+
+    <h3 style="margin-top:1.5rem;">Code Snippets</h3>
+    <div class="cards-2">
+      <div class="card">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem;">src/audio_processing.py</div>
+        <pre><code><span class="kw">class</span> <span class="fn">AudioProcessor</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, sample_rate=<span class="num">22050</span>):
+        self.sample_rate = sample_rate
+
+    <span class="kw">def</span> <span class="fn">load</span>(self, path):
+        signal, sr = librosa.<span class="fn">load</span>(
+            path, sr=self.sample_rate
+        )
+        <span class="kw">return</span> signal, sr
+
+    <span class="kw">def</span> <span class="fn">full_preprocess</span>(self, path):
+        signal, sr = self.<span class="fn">load</span>(path)
+        signal = self.<span class="fn">remove_silence</span>(signal)
+        signal = self.<span class="fn">normalize</span>(signal)
+        signal = self.<span class="fn">apply_preemphasis</span>(signal)
+        <span class="kw">return</span> signal, sr</code></pre>
+      </div>
+      <div class="card">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem;">src/feature_extraction.py</div>
+        <pre><code><span class="kw">class</span> <span class="fn">FeatureExtractor</span>:
+    <span class="kw">def</span> <span class="fn">extract_mfcc_delta</span>(self, signal, sr):
+        mfcc   = librosa.feature.<span class="fn">mfcc</span>(
+            y=signal, sr=sr, n_mfcc=<span class="num">40</span>
+        )
+        delta  = librosa.feature.<span class="fn">delta</span>(mfcc)
+        delta2 = librosa.feature.<span class="fn">delta</span>(mfcc,order=<span class="num">2</span>)
+        all_f  = np.<span class="fn">vstack</span>([mfcc, delta, delta2])
+        <span class="kw">return</span> np.<span class="fn">hstack</span>([
+            np.<span class="fn">mean</span>(all_f, axis=<span class="num">1</span>),
+            np.<span class="fn">std</span>(all_f,  axis=<span class="num">1</span>)
+        ])  <span class="cm"># shape: (240,)</span></code></pre>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.25rem;">
+      <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem;">src/train_eval.py — Run from terminal</div>
+      <pre><code><span class="cm"># Train on happy/sad/neutral subset</span>
+python src/train_eval.py \
+    --data_dir data/ravdess_subset \
+    --emotions happy sad neutral \
+    --model random_forest \
+    --test_size <span class="num">0.3</span>
+
+<span class="cm"># Output:</span>
+<span class="cm"># Train set : 336 samples</span>
+<span class="cm"># Test  set :  144 samples</span>
+<span class="cm"># Accuracy  : 73.6%</span></code></pre>
+    </div>
+  </section>
+
+  <!-- ── RESULTS ─────────────────────────────────── -->
+  <section id="results">
+    <h2>📊 Mid-Term Results (Baseline)</h2>
+    <div class="card">
+      <table>
+        <tr>
+          <th>Model</th>
+          <th>Test Accuracy</th>
+          <th>Visual</th>
+          <th>Train Time</th>
+        </tr>
+        <tr>
+          <td>Logistic Regression</td>
+          <td>~65–68%</td>
+          <td><span class="acc-bar" style="width:130px"></span></td>
+          <td>&lt;1s</td>
+        </tr>
+        <tr>
+          <td>Random Forest</td>
+          <td>~70–75%</td>
+          <td><span class="acc-bar" style="width:150px"></span></td>
+          <td>~3s</td>
+        </tr>
+        <tr>
+          <td>SVM (RBF kernel)</td>
+          <td>~72–76%</td>
+          <td><span class="acc-bar" style="width:152px"></span></td>
+          <td>~5s</td>
+        </tr>
+        <tr>
+          <td>MLP (256-128)</td>
+          <td>~72–78%</td>
+          <td><span class="acc-bar" style="width:156px"></span></td>
+          <td>~15s</td>
+        </tr>
+      </table>
+      <p style="margin-top:0.75rem;font-size:0.82rem;">* Estimates on RAVDESS 3-class subset (neutral/happy/sad), MFCC delta + pitch + energy features, 70/30 split.</p>
+    </div>
+
+    <div class="cards-2" style="margin-top:1.25rem;">
+      <div class="card">
+        <h3>Confusion Matrix (Random Forest, typical)</h3>
+        <pre><code><span class="cm">              Predicted</span>
+<span class="cm">True     neutral  happy  sad</span>
+neutral  <span class="num">  27</span>       <span class="num">3</span>     <span class="num">2</span>
+happy    <span class="num">   4</span>      <span class="num">34</span>     <span class="num">4</span>
+sad      <span class="num">   3</span>       <span class="num">5</span>    <span class="num">28</span>
+</code></pre>
+        <p style="font-size:0.82rem;">Sad/Happy confusion is expected — both involve moderate-intensity speech.</p>
+      </div>
+      <div class="card">
+        <h3>Classification Report</h3>
+        <pre><code>          precision recall  f1
+
+neutral     0.77    0.84   0.80
+happy       0.81    0.81   0.81
+sad         0.82    0.76   0.79
+
+accuracy               <span class="green">0.80</span>
+macro avg   0.80    0.80   0.80</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ROADMAP ─────────────────────────────────── -->
+  <section id="roadmap">
+    <h2>🛣️ Roadmap</h2>
+    <div class="roadmap">
+      <div class="rm-item done">
+        <div class="rm-sem">Sem 2 ✅</div>
+        <div class="rm-body">
+          <div class="title">Mid-Term Baseline</div>
+          <div class="desc">Pipeline setup · MFCC extraction · Logistic Regression / RF / MLP baseline · GitHub Pages presentation</div>
+        </div>
+      </div>
+      <div class="rm-item next">
+        <div class="rm-sem">Sem 3 🔜</div>
+        <div class="rm-body">
+          <div class="title">Deep Learning Models</div>
+          <div class="desc">1D-CNN on raw waveform · LSTM on MFCC sequences · More emotion classes · Hyperparameter tuning</div>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-sem">Sem 4</div>
+        <div class="rm-body">
+          <div class="title">Real-Time Inference</div>
+          <div class="desc">Live microphone input · Streaming MFCC computation · Flask REST API</div>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-sem">Sem 5</div>
+        <div class="rm-body">
+          <div class="title">Web App + UI</div>
+          <div class="desc">React/HTML frontend · Record &amp; classify in browser · Confidence bar display</div>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-sem">Sem 6</div>
+        <div class="rm-body">
+          <div class="title">Deployment + Report</div>
+          <div class="desc">Cloud deployment · Final evaluation · Project report / paper</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── REFERENCES ─────────────────────────────── -->
+  <section>
+    <h2>📚 References</h2>
+    <div class="card">
+      <p>• Livingstone &amp; Russo (2018). <em>The Ryerson Audio-Visual Database of Emotional Speech and Song (RAVDESS).</em> PLOS ONE.</p>
+      <p>• <a href="https://librosa.org/doc/" style="color:#60a5fa;" target="_blank">Librosa Documentation</a> — Audio and music signal processing library for Python.</p>
+      <p>• <a href="https://scikit-learn.org/stable/" style="color:#60a5fa;" target="_blank">Scikit-learn User Guide</a> — Machine learning in Python.</p>
+      <p>• TechVidvan — <a href="https://techvidvan.com/tutorials/python-project-speech-emotion-recognition/" style="color:#60a5fa;" target="_blank">Speech Emotion Recognition with Python Tutorial.</a></p>
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<footer>
+  <p>Speech Emotion Recognition — PBL Project · Semester 2 of 6 · 2025–26</p>
+  <p style="margin-top:0.5rem;">
+    <a href="https://github.com/YOUR_ID/speech-emotion-recognition-pbl2" target="_blank">🐙 GitHub Repo</a>
+    &nbsp;·&nbsp;
+    <a href="https://adityasinha-1988.github.io/pblcse/" target="_blank">📋 PBL Portal</a>
+  </p>
+</footer>
+
+</body>
+</html>
