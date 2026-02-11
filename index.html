@@ -579,10 +579,14 @@
 
   <div class="problem-card">
     <p style="color:var(--text); font-size:1.05rem;">
-      Human communication conveys emotion through tone, pitch, rhythm, and energy —
-      not just words. Current voice interfaces (Alexa, Siri) respond only to <em>what</em>
-      you say, not <em>how</em> you feel. Speech Emotion Recognition (SER) bridges this gap
-      by automatically classifying emotional states directly from audio signals.
+      Speech Emotion Recognition (SER) identifies emotions from audio using 
+      acoustic features like pitch, volume, and tempo, or linguistic features like 
+      word choice, which are extracted from pre-processed speech signals and fed into 
+      machine learning models for classification into emotions like happiness, 
+      sadness, or anger. This technology is applied in customer service, 
+      security, and entertainment through a three-step process: signal pre-processing, 
+      feature extraction, and emotion classification, with libraries like Librosa and 
+      Python aiding in the process.  
     </p>
   </div>
 
@@ -633,34 +637,20 @@
         <td>Very high compute, complex fine-tuning</td>
       </tr>
       <tr>
-        <td><strong>Our approach (Sem 2)</strong></td>
+        <td><strong>Our approach (Sem 4)</strong></td>
         <td><strong>MFCC + delta + pitch + energy</strong></td>
-        <td><strong>Baseline — extensible to deep models in Sem 3</strong></td>
+        <td><strong>Baseline — extensible to deep models in Sem 5</strong></td>
       </tr>
     </table>
   </div>
 
-  <h3>Research Gap / Our Innovation</h3>
+  <h3>Research Gap</h3>
   <div class="card">
     <div class="gap-item">
       <div class="gap-num">1</div>
       <div>
         <strong style="color:var(--text);">OOP Pipeline Architecture</strong>
-        <p style="font-size:0.85rem; margin:0.3rem 0 0;">Modular classes (AudioProcessor → FeatureExtractor → EmotionClassifier) make it easy to swap feature methods or models without rewriting the pipeline — unlike most tutorial-style scripts.</p>
-      </div>
-    </div>
-    <div class="gap-item">
-      <div class="gap-num">2</div>
-      <div>
-        <strong style="color:var(--text);">Combined Feature Vector</strong>
-        <p style="font-size:0.85rem; margin:0.3rem 0 0;">We combine MFCC + delta + delta-delta + pitch + energy + ZCR into a 247-dimensional vector. Most student projects use only plain MFCC mean, losing temporal dynamics captured by delta features.</p>
-      </div>
-    </div>
-    <div class="gap-item">
-      <div class="gap-num">3</div>
-      <div>
-        <strong style="color:var(--text);">Extensible Roadmap</strong>
-        <p style="font-size:0.85rem; margin:0.3rem 0 0;">The same pipeline is designed to accept deep learning models in Semester 3 — simply swap the classifier stage with a 1D-CNN or LSTM without changing preprocessing or feature extraction.</p>
+        <p style="font-size:0.85rem; margin:0.3rem 0 0;">“Most SER papers focus either on theory or on one specific model; in this project I implement an end-to-end pipeline, from audio signal processing and feature extraction (like MFCCs, pitch, loudness) to machine learning and deep/self‐supervised models, and compare them systematically on benchmark datasets such as IEMOCAP and RAVDESS.”Modular classes (AudioProcessor → FeatureExtractor → EmotionClassifier) make it easy to swap feature methods or models without rewriting the pipeline — unlike most tutorial-style scripts.</p>
       </div>
     </div>
   </div>
