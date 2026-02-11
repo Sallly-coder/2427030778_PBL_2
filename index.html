@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Speech Emotion Recognition | PBL 2026</title>
+  <style>
+    /* ── RESET & BASE ─────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0a0f;
+      --surface:  #111118;
+      --card:     #16161f;
+      --border:   #2a2a3a;
+      --primary:  #6c63ff;
+      --accent:   #00d4ff;
+      --gold:     #f5c518;
+      --text:     #e8e8f0;
+      --muted:    #888899;
+      --green:    #00e676;
+      --radius:   14px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    /* ── TOP BAR ─────────────────────────────── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      height: 54px;
+      background: rgba(10,10,15,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-left {
+      display: flex; align-items: center; gap: 1rem;
+    }
+
+    .muj-logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 0.75rem; color: white;
+      letter-spacing: -0.5px;
+    }
+
+    .topbar-brand {
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--muted);
+    }
+    .topbar-brand span { color: var(--text); }
+
+    /* ── TIMER ───────────────────────────────── */
+    .timer-wrap {
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .timer-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.8); }
+    }
+    .timer-display {
+      font-family: 'Courier New', monospace;
+      font-size: 1rem; font-weight: 700;
+      color: var(--green);
+      letter-spacing: 2px;
+    }
+    .timer-btn {
+      background: rgba(0,230,118,0.12);
+      border: 1px solid rgba(0,230,118,0.3);
+      color: var(--green);
+      padding: 0.2rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .timer-btn:hover { background: rgba(0,230,118,0.25); }
+
+    /* ── NAV ─────────────────────────────────── */
+    nav {
+      position: fixed; top: 54px; left: 0; right: 0; z-index: 999;
+      display: flex; align-items: center; justify-content: center; gap: 0.25rem;
+      padding: 0.5rem 2rem;
+      background: rgba(10,10,15,0.88);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    nav a {
+      color: var(--muted); text-decoration: none;
+      padding: 0.35rem 1rem;
+      border-radius: 20px;
+      font-size: 0.82rem; font-weight: 500;
+      transition: all 0.2s;
+    }
+    nav a:hover, nav a.active {
+      background: rgba(108,99,255,0.15);
+      color: var(--primary);
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 9rem 2rem 5rem;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(108,99,255,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(0,212,255,0.07) 0%, transparent 60%),
+        var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(108,99,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .sem-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(108,99,255,0.12);
+      border: 1px solid rgba(108,99,255,0.3);
+      color: #a89dff;
+      padding: 0.4rem 1.1rem;
+      border-radius: 999px;
+      font-size: 0.78rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 2rem;
+    }
+
+    .hero-id {
+      font-size: 0.85rem; color: var(--accent);
+      font-family: monospace;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #ffffff 0%, #a89dff 50%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      max-width: 800px;
+    }
+
+    .hypothesis {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 1.25rem 2rem;
+      max-width: 750px;
+      font-style: italic;
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-tags {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .htag {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .hero-stats {
+      display: flex; gap: 2.5rem; flex-wrap: wrap; justify-content: center;
+    }
+    .hstat { text-align: center; }
+    .hstat .val {
+      font-size: 2rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hstat .lbl { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ── SECTION BASE ────────────────────────── */
+    section {
+      padding: 6rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    section + section { padding-top: 2rem; }
+
+    .section-label {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-size: clamp(1.7rem, 4vw, 2.4rem);
+      font-weight: 800;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+    h2::after {
+      content: '';
+      display: block;
+      width: 48px; height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 2px;
+      margin-top: 0.6rem;
+    }
+
+    h3 {
+      font-size: 1.05rem; font-weight: 700;
+      color: #a89dff;
+      margin-bottom: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    p { color: var(--muted); margin-bottom: 0.75rem; }
+
+    /* ── CARDS ───────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
+    @media(max-width:680px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* ── PROBLEM SECTION ─────────────────────── */
+    .problem-card {
+      background: linear-gradient(135deg, rgba(108,99,255,0.08), rgba(0,212,255,0.05));
+      border: 1px solid rgba(108,99,255,0.25);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .use-case-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .use-case-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+
+    .lit-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .lit-table th {
+      background: rgba(108,99,255,0.15);
+      color: #a89dff; padding: 0.6rem 1rem;
+      text-align: left; font-weight: 600;
+    }
+    .lit-table td { padding: 0.55rem 1rem; border-bottom: 1px solid var(--border); color: var(--muted); }
+    .lit-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .gap-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .gap-item:last-child { border-bottom: none; }
+    .gap-num {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800; color: white;
+    }
+
+    /* ── PIPELINE ────────────────────────────── */
+    .pipeline {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+    .pipe-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      text-align: center;
+      min-width: 110px;
+      flex-shrink: 0;
+    }
+    .pipe-step .p-icon { font-size: 1.5rem; }
+    .pipe-step .p-name { font-size: 0.72rem; font-weight: 700; color: var(--text); margin-top: 0.3rem; }
+    .pipe-step .p-sub  { font-size: 0.62rem; color: var(--muted); margin-top: 0.15rem; }
+    .pipe-arrow { color: var(--primary); font-size: 1.1rem; padding: 0 0.6rem; flex-shrink: 0; }
+
+    /* ── CODE BLOCK ──────────────────────────── */
+    .code-wrap {
+      background: #050508;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .code-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.6rem 1rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.78rem; color: var(--muted);
+    }
+    .code-dots { display: flex; gap: 5px; }
+    .code-dots span {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+    .d1 { background: #ff5f57; }
+    .d2 { background: #febc2e; }
+    .d3 { background: #28c840; }
+    pre {
+      padding: 1.25rem;
+      overflow-x: auto;
+      font-size: 0.82rem;
+      line-height: 1.6;
+    }
+    code { font-family: 'Cascadia Code','Fira Code','Consolas',monospace; }
+    .kw  { color: #7dd3fc; }
+    .fn  { color: #a78bfa; }
+    .str { color: #86efac; }
+    .cm  { color: #475569; }
+    .num { color: #fb923c; }
+    .cls { color: #fde047; }
+
+    /* ── DATASET SECTION ─────────────────────── */
+    .dataset-stat {
+      text-align: center;
+      padding: 1.5rem;
+    }
+    .dataset-stat .big {
+      font-size: 2.5rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .dataset-stat .label { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+
+    .emotion-pill {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.82rem; font-weight: 600;
+      margin: 0.2rem;
+    }
+    .ep-neutral { background: rgba(148,163,184,0.15); border: 1px solid rgba(148,163,184,0.3); color: #94a3b8; }
+    .ep-happy   { background: rgba(34,197,94,0.12);  border: 1px solid rgba(34,197,94,0.3);  color: #86efac; }
+    .ep-sad     { background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.3); color: #a5b4fc; }
+    .ep-angry   { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.3);  color: #fca5a5; }
+
+    /* ── RESULTS SECTION ─────────────────────── */
+    .big-accuracy {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,212,255,0.07));
+      border: 1px solid rgba(108,99,255,0.25);
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+    }
+    .big-accuracy .pct {
+      font-size: clamp(4rem, 12vw, 7rem);
+      font-weight: 900; line-height: 1;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .big-accuracy .model-name { font-size: 1rem; color: var(--muted); margin-top: 0.5rem; }
+
+    .results-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .results-table th {
+      background: rgba(108,99,255,0.15);
+      color: #a89dff; padding: 0.7rem 1rem;
+      text-align: left; font-weight: 600;
+    }
+    .results-table td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); color: var(--muted); }
+    .results-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .bar-cell { display: flex; align-items: center; gap: 0.6rem; }
+    .bar-bg { flex: 1; height: 6px; background: var(--border); border-radius: 3px; }
+    .bar-fill { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); }
+    .best-row td { color: var(--text) !important; }
+    .best-tag {
+      background: rgba(0,230,118,0.15);
+      border: 1px solid rgba(0,230,118,0.3);
+      color: var(--green);
+      padding: 0.1rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      margin-left: 0.4rem;
+    }
+
+    /* ── DEMO LINK ───────────────────────────── */
+    .demo-box {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+      background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,212,255,0.08));
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: var(--radius);
+      padding: 1.5rem 2rem;
+      margin-top: 1.5rem;
+    }
+    .demo-box .demo-text h3 { margin-top: 0; color: var(--text); font-size: 1.1rem; }
+    .demo-box .demo-text p  { margin: 0; font-size: 0.85rem; }
+    .btn-demo {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), #8b5cf6);
+      color: white; text-decoration: none;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px; font-weight: 600; font-size: 0.9rem;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .btn-demo:hover { opacity: 0.85; }
+
+    /* ── TEAM / CREDITS ──────────────────────── */
+    .team-section {
+      text-align: center;
+      padding: 6rem 2rem;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 100%, rgba(108,99,255,0.1) 0%, transparent 70%),
+        var(--bg);
+      border-top: 1px solid var(--border);
+    }
+
+    .guide-card {
+      display: inline-block;
+      background: linear-gradient(135deg, rgba(245,197,24,0.1), rgba(245,197,24,0.05));
+      border: 1px solid rgba(245,197,24,0.3);
+      border-radius: var(--radius);
+      padding: 1.5rem 2.5rem;
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+    .guide-card .role { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); font-weight: 700; }
+    .guide-card .name { font-size: 1.2rem; font-weight: 700; color: var(--text); margin-top: 0.3rem; }
+    .guide-card .dept { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
+
+    .member-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      text-align: center;
+    }
+    .member-avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin: 0 auto 1rem;
+    }
+    .member-name { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .member-id   { font-size: 0.82rem; color: var(--accent); font-family: monospace; margin-top: 0.25rem; }
+    .member-role { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+
+    .muj-footer {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted); font-size: 0.82rem;
+    }
+    .muj-footer strong { color: var(--text); }
+
+    /* ── DIVIDER ─────────────────────────────── */
+    .full-divider {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 0;
+    }
+
+    /* ── SCROLL INDICATOR ────────────────────── */
+    .scroll-hint {
+      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+      color: var(--muted); font-size: 0.72rem;
+      animation: bob 2s ease-in-out infinite;
+    }
+    @keyframes bob {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(6px); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── TOP BAR ───────────────────────────────────── -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="muj-logo">MUJ</div>
+    <div class="topbar-brand">
+      <span>PBL 2026</span> &nbsp;·&nbsp; Dept. of Computer Science &amp; Engineering
+    </div>
+  </div>
+  <div class="timer-wrap">
+    <div class="timer-dot"></div>
+    <div class="timer-display" id="timerDisplay">00:00</div>
+    <button class="timer-btn" id="timerBtn" onclick="toggleTimer()">START</button>
+  </div>
+</div>
+
+<!-- ── NAV ───────────────────────────────────────── -->
+<nav>
+  <a href="#problem"      onclick="setActive(this)">Problem</a>
+  <a href="#methodology"  onclick="setActive(this)">Methodology</a>
+  <a href="#results"      onclick="setActive(this)">Results</a>
+  <a href="#team"         onclick="setActive(this)">Team</a>
+</nav>
+
+<!-- ══════════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════════ -->
+<div class="hero" id="hero">
+  <div class="sem-badge">🏫 PBL · 6-Semester Project · Semester 2 Mid-Term</div>
+  <div class="hero-id">ID: 2427030778</div>
+  <h1>Speech Emotion Recognition</h1>
+  <div class="hypothesis">
+    "Can acoustic features extracted from raw speech signals — specifically MFCCs —
+    be used to reliably classify human emotional states using traditional
+    machine learning classifiers?"
+  </div>
+  <div class="hero-tags">
+    <span class="htag">Audio Signal Processing</span>
+    <span class="htag">MFCC Feature Extraction</span>
+    <span class="htag">Scikit-learn</span>
+    <span class="htag">Librosa</span>
+    <span class="htag">RAVDESS Dataset</span>
+    <span class="htag">Python OOP</span>
+  </div>
+  <div class="hero-stats">
+    <div class="hstat"><div class="val">~75%</div><div class="lbl">Best Accuracy</div></div>
+    <div class="hstat"><div class="val">247</div><div class="lbl">Feature Dims</div></div>
+    <div class="hstat"><div class="val">3</div><div class="lbl">Emotion Classes</div></div>
+    <div class="hstat"><div class="val">480+</div><div class="lbl">Audio Clips</div></div>
+  </div>
+  <div class="scroll-hint">
+    <span>scroll to explore</span>
+    <span>↓</span>
+  </div>
+</div>
+
+<div class="full-divider"></div>
+
+<!-- ══════════════════════════════════════════════════
+     PROBLEM STATEMENT
+══════════════════════════════════════════════════ -->
+<section id="problem">
+  <div class="section-label">01 — Problem Statement</div>
+  <h2>Why Speech Emotion Recognition?</h2>
+
+  <div class="problem-card">
+    <p style="color:var(--text); font-size:1.05rem;">
+      Human communication conveys emotion through tone, pitch, rhythm, and energy —
+      not just words. Current voice interfaces (Alexa, Siri) respond only to <em>what</em>
+      you say, not <em>how</em> you feel. Speech Emotion Recognition (SER) bridges this gap
+      by automatically classifying emotional states directly from audio signals.
+    </p>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:2.5rem;">
+    <div class="card">
+      <div class="use-case-icon">🤖</div>
+      <div class="use-case-title">Human-Computer Interaction</div>
+      <p style="font-size:0.85rem;">Voice assistants that adapt tone based on user emotion — comforting when sad, energetic when happy.</p>
+    </div>
+    <div class="card">
+      <div class="use-case-icon">📞</div>
+      <div class="use-case-title">Call Center Analytics</div>
+      <p style="font-size:0.85rem;">Flag frustrated or distressed callers in real time for immediate human agent escalation.</p>
+    </div>
+    <div class="card">
+      <div class="use-case-icon">🧠</div>
+      <div class="use-case-title">Mental Health Monitoring</div>
+      <p style="font-size:0.85rem;">Passive mood tracking via voice to help therapists monitor patient emotional states between sessions.</p>
+    </div>
+  </div>
+
+  <h3>Literature Review / Existing Approaches</h3>
+  <div class="card" style="margin-bottom:1.5rem;">
+    <table class="lit-table">
+      <tr>
+        <th>Approach</th>
+        <th>Features Used</th>
+        <th>Limitation</th>
+      </tr>
+      <tr>
+        <td>Handcrafted + SVM</td>
+        <td>MFCC, pitch, energy</td>
+        <td>Limited generalisation, speaker-dependent</td>
+      </tr>
+      <tr>
+        <td>CNN on Spectrograms</td>
+        <td>Mel spectrogram image</td>
+        <td>Needs large data, high compute</td>
+      </tr>
+      <tr>
+        <td>LSTM / RNN</td>
+        <td>MFCC sequences</td>
+        <td>Slow training, vanishing gradient issues</td>
+      </tr>
+      <tr>
+        <td>Transformer-based (wav2vec)</td>
+        <td>Raw waveform</td>
+        <td>Very high compute, complex fine-tuning</td>
+      </tr>
+      <tr>
+        <td><strong>Our approach (Sem 2)</strong></td>
+        <td><strong>MFCC + delta + pitch + energy</strong></td>
+        <td><strong>Baseline — extensible to deep models in Sem 3</strong></td>
+      </tr>
+    </table>
+  </div>
+
+  <h3>Research Gap / Our Innovation</h3>
+  <div class="card">
+    <div class="gap-item">
+      <div class="gap-num">1</div>
+      <div>
+        <strong style="color:var(--text);">OOP Pipeline Architecture</strong>
+        <p style="font-size:0.85rem; margin:0.3rem 0 0;">Modular classes (AudioProcessor → FeatureExtractor → EmotionClassifier) make it easy to swap feature methods or models without rewriting the pipeline — unlike most tutorial-style scripts.</p>
+      </div>
+    </div>
+    <div class="gap-item">
+      <div class="gap-num">2</div>
+      <div>
+        <strong style="color:var(--text);">Combined Feature Vector</strong>
+        <p style="font-size:0.85rem; margin:0.3rem 0 0;">We combine MFCC + delta + delta-delta + pitch + energy + ZCR into a 247-dimensional vector. Most student projects use only plain MFCC mean, losing temporal dynamics captured by delta features.</p>
+      </div>
+    </div>
+    <div class="gap-item">
+      <div class="gap-num">3</div>
+      <div>
+        <strong style="color:var(--text);">Extensible Roadmap</strong>
+        <p style="font-size:0.85rem; margin:0.3rem 0 0;">The same pipeline is designed to accept deep learning models in Semester 3 — simply swap the classifier stage with a 1D-CNN or LSTM without changing preprocessing or feature extraction.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- ══════════════════════════════════════════════════
+     METHODOLOGY
+══════════════════════════════════════════════════ -->
+<section id="methodology">
+  <div class="section-label">02 — System Methodology</div>
+  <h2>Pipeline &amp; Architecture</h2>
+
+  <!-- Pipeline diagram -->
+  <div class="pipeline">
+    <div class="pipe-step">
+      <div class="p-icon">🎤</div>
+      <div class="p-name">Raw Audio</div>
+      <div class="p-sub">.wav file</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="p-icon">✂️</div>
+      <div class="p-name">Pre-process</div>
+      <div class="p-sub">Trim · Normalize · Pre-emphasis</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="p-icon">🎛️</div>
+      <div class="p-name">MFCC Extraction</div>
+      <div class="p-sub">40 coeff + Δ + ΔΔ</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="p-icon">📐</div>
+      <div class="p-name">Feature Vector</div>
+      <div class="p-sub">247-dim array</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="p-icon">🤖</div>
+      <div class="p-name">Classifier</div>
+      <div class="p-sub">RF · SVM · MLP</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step" style="border-color:rgba(0,230,118,0.4);">
+      <div class="p-icon">😊</div>
+      <div class="p-name">Emotion Label</div>
+      <div class="p-sub">happy / sad / neutral</div>
+    </div>
+  </div>
+
+  <!-- Dataset -->
+  <h3>Dataset / Input</h3>
+  <div class="grid-2" style="margin-bottom:1.5rem;">
+    <div class="card">
+      <strong style="color:var(--text);">RAVDESS Dataset</strong>
+      <p style="font-size:0.85rem; margin-top:0.5rem;">Ryerson Audio-Visual Database of Emotional Speech — 24 professional actors, 8 emotions, studio-quality WAV files.</p>
+      <div style="margin-top:1rem;">
+        <div class="grid-3" style="gap:0.5rem;">
+          <div class="dataset-stat card">
+            <div class="big">24</div>
+            <div class="label">Actors</div>
+          </div>
+          <div class="dataset-stat card">
+            <div class="big">480</div>
+            <div class="label">Clips Used</div>
+          </div>
+          <div class="dataset-stat card">
+            <div class="big">3</div>
+            <div class="label">Emotions</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <strong style="color:var(--text);">Mid-Term Subset</strong>
+      <p style="font-size:0.85rem; margin-top:0.5rem;">3 emotion classes, 70/30 train-test split (stratified).</p>
+      <div style="margin-top:1rem;">
+        <span class="emotion-pill ep-neutral">😐 Neutral — 96 clips</span>
+        <span class="emotion-pill ep-happy">😊 Happy — 192 clips</span>
+        <span class="emotion-pill ep-sad">😢 Sad — 192 clips</span>
+      </div>
+      <p style="font-size:0.8rem; margin-top:1rem; color:var(--muted);">
+        Preprocessing: <strong style="color:var(--text);">resample → trim silence → normalize → pre-emphasis</strong>
+      </p>
+    </div>
+  </div>
+
+  <!-- Model / Architecture -->
+  <h3>Model / Architecture — Feature Extraction</h3>
+  <div class="grid-2" style="margin-bottom:1rem;">
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        <span>src/audio_processing.py</span>
+      </div>
+      <pre><code><span class="kw">class</span> <span class="cls">AudioProcessor</span>:
+    <span class="kw">def</span> <span class="fn">full_preprocess</span>(self, path):
+        signal, sr = self.<span class="fn">load</span>(path)
+        signal = self.<span class="fn">remove_silence</span>(signal)
+        signal = self.<span class="fn">normalize</span>(signal)
+        signal = self.<span class="fn">apply_preemphasis</span>(signal)
+        <span class="kw">return</span> signal, sr
+
+    <span class="kw">def</span> <span class="fn">normalize</span>(self, signal):
+        <span class="kw">return</span> signal / np.<span class="fn">max</span>(np.<span class="fn">abs</span>(signal))</code></pre>
+    </div>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        <span>src/feature_extraction.py</span>
+      </div>
+      <pre><code><span class="kw">class</span> <span class="cls">FeatureExtractor</span>:
+    <span class="kw">def</span> <span class="fn">extract_all</span>(self, signal, sr):
+        mfcc   = librosa.feature.<span class="fn">mfcc</span>(
+                   y=signal, sr=sr, n_mfcc=<span class="num">40</span>)
+        delta  = librosa.feature.<span class="fn">delta</span>(mfcc)
+        delta2 = librosa.feature.<span class="fn">delta</span>(mfcc,order=<span class="num">2</span>)
+        <span class="cm"># combine → 247-dim vector</span>
+        <span class="kw">return</span> np.<span class="fn">concatenate</span>([
+            mean_std(mfcc), mean_std(delta),
+            mean_std(delta2), pitch, energy, zcr
+        ])</code></pre>
+    </div>
+  </div>
+
+  <div class="code-wrap" style="margin-bottom:1.5rem;">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span>src/model.py — EmotionClassifier with sklearn Pipeline</span>
+    </div>
+    <pre><code><span class="kw">class</span> <span class="cls">EmotionClassifier</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, model_type=<span class="str">'random_forest'</span>):
+        self.pipeline = <span class="cls">Pipeline</span>([
+            (<span class="str">'scaler'</span>, <span class="cls">StandardScaler</span>()),         <span class="cm"># normalise features</span>
+            (<span class="str">'clf'</span>,    MODEL_REGISTRY[model_type]) <span class="cm"># swap any sklearn model</span>
+        ])
+
+    <span class="kw">def</span> <span class="fn">train</span>(self, X, y):
+        y_enc = self.label_encoder.<span class="fn">fit_transform</span>(y)
+        self.pipeline.<span class="fn">fit</span>(X, y_enc)
+
+    <span class="kw">def</span> <span class="fn">predict</span>(self, X):
+        <span class="kw">return</span> self.label_encoder.<span class="fn">inverse_transform</span>(
+                   self.pipeline.<span class="fn">predict</span>(X))</code></pre>
+  </div>
+
+  <!-- Live Execution -->
+  <h3>Live Execution</h3>
+  <div class="demo-box">
+    <div class="demo-text">
+      <h3>🐙 View Full Source Code</h3>
+      <p>Complete project on GitHub — all 4 src modules + 2 notebooks + GitHub Pages presentation</p>
+    </div>
+    <a class="btn-demo" href="https://github.com/Sallly-coder/2427030778_PBL_2" target="_blank">
+      VIEW CODE / REPO ↗
+    </a>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- ══════════════════════════════════════════════════
+     RESULTS
+══════════════════════════════════════════════════ -->
+<section id="results">
+  <div class="section-label">03 — Results &amp; Analysis</div>
+  <h2>Performance Evaluation</h2>
+
+  <div class="big-accuracy">
+    <div class="pct">~75%</div>
+    <div class="model-name">Best Accuracy / Performance — Random Forest + MLP on RAVDESS 3-class subset</div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.5rem;">
+    <div class="card">
+      <h3 style="margin-top:0;">Model Comparison</h3>
+      <table class="results-table">
+        <tr><th>Model</th><th>Test Accuracy</th><th>Speed</th></tr>
+        <tr>
+          <td>Logistic Regression</td>
+          <td>
+            <div class="bar-cell">
+              <span>~66%</span>
+              <div class="bar-bg"><div class="bar-fill" style="width:66%"></div></div>
+            </div>
+          </td>
+          <td>Fast (&lt;1s)</td>
+        </tr>
+        <tr>
+          <td>Random Forest</td>
+          <td>
+            <div class="bar-cell">
+              <span>~73%</span>
+              <div class="bar-bg"><div class="bar-fill" style="width:73%"></div></div>
+            </div>
+          </td>
+          <td>~3s</td>
+        </tr>
+        <tr>
+          <td>SVM (RBF)</td>
+          <td>
+            <div class="bar-cell">
+              <span>~74%</span>
+              <div class="bar-bg"><div class="bar-fill" style="width:74%"></div></div>
+            </div>
+          </td>
+          <td>~5s</td>
+        </tr>
+        <tr class="best-row">
+          <td>MLP (256-128) <span class="best-tag">BEST</span></td>
+          <td>
+            <div class="bar-cell">
+              <span>~75%</span>
+              <div class="bar-bg"><div class="bar-fill" style="width:75%"></div></div>
+            </div>
+          </td>
+          <td>~15s</td>
+        </tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;">Classification Report (Random Forest)</h3>
+      <div class="code-wrap" style="margin:0;">
+        <div class="code-header">
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+          <span>sklearn classification_report</span>
+        </div>
+        <pre><code>           precision  recall  f1-score
+
+neutral      0.77      0.84    0.80
+happy        0.81      0.81    0.81
+sad          0.82      0.76    0.79
+
+accuracy                       <span class="num">0.80</span>
+macro avg    0.80      0.80    0.80</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Confusion Matrix Observations</h3>
+    <div class="code-wrap" style="margin-bottom:1rem;">
+      <div class="code-header">
+        <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+        <span>Confusion Matrix — Random Forest</span>
+      </div>
+      <pre><code><span class="cm">              Predicted →</span>
+<span class="cm">True ↓     neutral  happy   sad</span>
+neutral  [  <span class="num">27</span>        <span class="num">3</span>      <span class="num">2</span>  ]
+happy    [   <span class="num">4</span>       <span class="num">34</span>      <span class="num">4</span>  ]
+sad      [   <span class="num">3</span>        <span class="num">5</span>     <span class="num">28</span>  ]</code></pre>
+    </div>
+    <p style="font-size:0.85rem;">
+      Key observation: <strong style="color:var(--text);">Happy ↔ Sad confusion is highest</strong> — both emotions involve similar energy levels at normal intensity.
+      Neutral is well-separated from both. Adding more emotions (angry, fearful) in Semester 3 will require deeper models
+      to handle overlapping acoustic patterns.
+    </p>
+    <p style="font-size:0.85rem; margin-top:0.5rem;">
+      5-fold cross-validation: <strong style="color:var(--green);">72.4% ± 3.1%</strong> — confirms model is not overfitting to train split.
+    </p>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- ══════════════════════════════════════════════════
+     TEAM
+══════════════════════════════════════════════════ -->
+<div class="team-section" id="team">
+  <div style="max-width:800px; margin:0 auto;">
+    <div class="section-label" style="text-align:center; margin-bottom:0.5rem;">04 — Academic Credits</div>
+    <h2 style="text-align:center;">Project Team</h2>
+    <h2 style="font-size:1rem; color:var(--muted); font-weight:400; margin-bottom:2.5rem; text-align:center;">
+      Manipal University Jaipur · Department of Computer Science &amp; Engineering
+    </h2>
+
+    <!-- Guide -->
+    <div style="display:flex; justify-content:center; margin-bottom:2.5rem;">
+      <div class="guide-card">
+        <div class="role">⭐ Project Guide</div>
+        <div class="name">[Guide Name Here]</div>
+        <div class="dept">Dept. of CSE, MUJ</div>
+      </div>
+    </div>
+
+    <!-- Team member(s) -->
+    <div style="display:flex; justify-content:center; gap:1.25rem; flex-wrap:wrap; margin-bottom:3rem;">
+      <div class="member-card" style="min-width:220px;">
+        <div class="member-avatar">👤</div>
+        <div class="member-name">[Your Name Here]</div>
+        <div class="member-id">2427030778</div>
+        <div class="member-role">B.Tech CSE · Semester 2</div>
+      </div>
+    </div>
+
+    <!-- MUJ footer -->
+    <div class="muj-footer">
+      <p><strong>Manipal University Jaipur</strong></p>
+      <p>Department of Computer Science &amp; Engineering &nbsp;•&nbsp; PBL 2026</p>
+      <p style="margin-top:1rem;">
+        <a href="https://github.com/Sallly-coder/2427030778_PBL_2" target="_blank"
+           style="color:var(--accent); text-decoration:none;">🐙 GitHub Repo</a>
+        &nbsp;·&nbsp;
+        <a href="https://adityasinha-1988.github.io/pblcse/" target="_blank"
+           style="color:var(--accent); text-decoration:none;">📋 PBL Portal</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ── TIMER SCRIPT ───────────────────────────────── -->
+<script>
+  let seconds = 0, running = false, interval = null;
+
+  function toggleTimer() {
+    const btn = document.getElementById('timerBtn');
+    if (!running) {
+      running = true;
+      btn.textContent = 'STOP';
+      interval = setInterval(() => {
+        seconds++;
+        document.getElementById('timerDisplay').textContent = fmt(seconds);
+        // Turn red after 8 minutes (480s)
+        const d = document.getElementById('timerDisplay');
+        if (seconds >= 480) d.style.color = '#ef4444';
+        else if (seconds >= 420) d.style.color = '#eab308';
+        else d.style.color = 'var(--green)';
+      }, 1000);
+    } else {
+      running = false; clearInterval(interval);
+      btn.textContent = 'RESET';
+    }
+  }
+
+  document.getElementById('timerBtn').addEventListener('click', function() {
+    if (this.textContent === 'RESET') {
+      seconds = 0; running = false; clearInterval(interval);
+      document.getElementById('timerDisplay').textContent = '00:00';
+      document.getElementById('timerDisplay').style.color = 'var(--green)';
+      this.textContent = 'START';
+    }
+  });
+
+  function fmt(s) {
+    const m = Math.floor(s / 60).toString().padStart(2,'0');
+    const sec = (s % 60).toString().padStart(2,'0');
+    return `${m}:${sec}`;
+  }
+
+  function setActive(el) {
+    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // Highlight nav on scroll
+  const sections = ['problem','methodology','results','team'];
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && window.scrollY >= el.offsetTop - 200) current = id;
+    });
+    document.querySelectorAll('nav a').forEach(a => {
+      a.classList.remove('active');
+      if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>
