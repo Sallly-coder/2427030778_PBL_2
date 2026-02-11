@@ -1,19 +1,10 @@
-# Core audio processing
-librosa==0.10.1
-soundfile==0.12.1
-
-# Data & ML
-numpy==1.26.4
-pandas==2.2.1
-scikit-learn==1.4.1
-
-# Visualization
-matplotlib==3.8.3
-seaborn==0.13.2
-
-# Notebooks
-jupyter==1.0.0
-ipykernel==6.29.3
-
-# Utilities
-tqdm==4.66.2
+librosa
+soundfile
+numpy
+pandas
+scikit-learn
+matplotlib
+seaborn
+jupyter
+ipykernel
+tqdm
