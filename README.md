@@ -36,7 +36,7 @@ speech-emotion-recognition-pbl2/
 
 ---
 
-## 🚀 Quickstart
+## 🛴 Quickstart
 
 ### 1. Clone the repo
 ```bash
@@ -91,10 +91,10 @@ jupyter notebook notebooks/
 
 ## 🛣️ Roadmap
 
-- [x] **Sem 2 (Mid-Term):** Pipeline setup, MFCC extraction, baseline classifiers
-- [ ] **Sem 3:** 1D-CNN / LSTM models, more emotions
-- [ ] **Sem 4:** Real-time audio input, Flask web app
-- [ ] **Sem 5–6:** Deployment, UI polish, paper/report
+- [x] **Sem 4 (Mid-Term):** Pipeline setup, MFCC extraction, baseline classifiers
+- [ ] **Sem 5:** 1D-CNN / LSTM models, more emotions
+- [ ] **Sem 6:** Real-time audio input
+- [ ] **Sem 7-8:** Deployment, UI polish, report
 
 ---
 
